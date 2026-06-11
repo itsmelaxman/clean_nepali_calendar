@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Clean Nepali Calendar Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: HomePage(),
     );
   }
@@ -20,30 +20,30 @@ class HomePage extends StatelessWidget {
   final NepaliCalendarController _nepaliCalendarController =
       NepaliCalendarController();
 
+  HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final NepaliDateTime first = NepaliDateTime(2075, 5);
     final NepaliDateTime last = NepaliDateTime(2079, 3);
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Clean Nepali Calendar'),
-      ),
+      appBar: AppBar(title: Text('Clean Nepali Calendar')),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             CleanNepaliCalendar(
-              headerDayBuilder: (_, index) {
+              headerDayBuilder: (dayString, index) {
                 return Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 5.0),
-                      child: Text(
-                        '$_',
-                        style:
-                            TextStyle(color: (index == 6) ? Colors.red : null),
-                      ),
-                    ));
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    child: Text(
+                      dayString,
+                      style: TextStyle(color: (index == 6) ? Colors.red : null),
+                    ),
+                  ),
+                );
               },
 
               // headerBuilder: (_,__,___,____,______)=>Text("header"),
@@ -59,9 +59,7 @@ class HomePage extends StatelessWidget {
                 // weekEndTextColor : Colors.green,
                 selectedColor: Colors.deepOrange,
                 dayStyle: TextStyle(fontWeight: FontWeight.bold),
-                todayStyle: TextStyle(
-                  fontSize: 20.0,
-                ),
+                todayStyle: TextStyle(fontSize: 20.0),
                 todayColor: Colors.orange.shade400,
                 // highlightSelected: true,
                 renderDaysOfWeek: true,
@@ -71,9 +69,10 @@ class HomePage extends StatelessWidget {
                 enableFadeTransition: false,
                 centerHeaderTitle: false,
                 titleTextStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepOrange,
-                    fontSize: 20.0),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepOrange,
+                  fontSize: 20.0,
+                ),
               ),
               initialDate: NepaliDateTime.now(),
               firstDate: first,
@@ -93,22 +92,32 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget cellBuilder(isToday, isSelected, isDisabled, nepaliDate, label, text,
-      calendarStyle, isWeekend) {
+  Widget cellBuilder(
+    isToday,
+    isSelected,
+    isDisabled,
+    nepaliDate,
+    label,
+    text,
+    calendarStyle,
+    isWeekend,
+  ) {
     // print(isSelected);
     Decoration _buildCellDecoration() {
       if (isSelected && isToday) {
         return BoxDecoration(
-            // shape: BoxShape.circle,
-            borderRadius: BorderRadius.circular(5),
-            color: Colors.blue,
-            border: Border.all(color: calendarStyle.selectedColor));
+          // shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(5),
+          color: Colors.blue,
+          border: Border.all(color: calendarStyle.selectedColor),
+        );
       }
       if (isSelected) {
         return BoxDecoration(
-            // shape: BoxShape.circle,
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: calendarStyle.selectedColor));
+          // shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(color: calendarStyle.selectedColor),
+        );
       } else if (isToday && calendarStyle.highlightToday) {
         return BoxDecoration(
           // shape: BoxShape.circle,
@@ -132,21 +141,28 @@ class HomePage extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
-            Text(text,
-                style: TextStyle(
-                    fontSize: 20, color: isWeekend ? Colors.red : null)),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 20,
+                color: isWeekend ? Colors.red : null,
+              ),
+            ),
 
             // to show events
             Align(
-                alignment: Alignment.bottomCenter,
-                child: CircleAvatar(
-                  radius: 1,
-                )),
+              alignment: Alignment.bottomCenter,
+              child: CircleAvatar(radius: 1),
+            ),
             Align(
               alignment: Alignment.bottomRight,
-              child: Text(nepaliDate.toDateTime().day.toString(),
-                  style: TextStyle(
-                      fontSize: 8, color: isWeekend ? Colors.red : null)),
+              child: Text(
+                nepaliDate.toDateTime().day.toString(),
+                style: TextStyle(
+                  fontSize: 8,
+                  color: isWeekend ? Colors.red : null,
+                ),
+              ),
             ),
           ],
         ),
