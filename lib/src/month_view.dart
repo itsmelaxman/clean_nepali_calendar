@@ -7,6 +7,7 @@ class _MonthView extends StatefulWidget {
     Key? key,
     required this.selectedDate,
     required this.onChanged,
+    this.onMonthChanged,
     required this.firstDate,
     required this.lastDate,
     required this.language,
@@ -27,6 +28,7 @@ class _MonthView extends StatefulWidget {
   final NepaliDateTime selectedDate;
 
   final ValueChanged<NepaliDateTime> onChanged;
+  final MonthChangedCallback? onMonthChanged;
 
   final NepaliDateTime firstDate;
 
@@ -68,7 +70,7 @@ class _MonthViewState extends State<_MonthView>
     // Initially display the pre-selected date.
     final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
     _dayPickerController = PageController(initialPage: monthPage);
-    _handleMonthPageChanged(monthPage);
+    _handleMonthPageChanged(monthPage, notify: false);
     _updateCurrentDate();
 
     // Setup the fade animation for chevrons
@@ -93,7 +95,7 @@ class _MonthViewState extends State<_MonthView>
     if (widget.selectedDate != oldWidget.selectedDate) {
       final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
       _dayPickerController = PageController(initialPage: monthPage);
-      _handleMonthPageChanged(monthPage);
+      _handleMonthPageChanged(monthPage, notify: false);
     }
   }
 
@@ -210,18 +212,20 @@ class _MonthViewState extends State<_MonthView>
   late NepaliDateTime _previousMonthDate;
   late NepaliDateTime _nextMonthDate;
 
-  void _handleMonthPageChanged(int monthPage) {
+  void _handleMonthPageChanged(int monthPage, {bool notify = true}) {
+    late NepaliDateTime displayedMonth;
     setState(() {
       _previousMonthDate = _addMonthsToMonthDate(
         widget.firstDate,
         monthPage - 1,
       );
-      _currentDisplayedMonthDate = _addMonthsToMonthDate(
-        widget.firstDate,
-        monthPage,
-      );
+      displayedMonth = _addMonthsToMonthDate(widget.firstDate, monthPage);
+      _currentDisplayedMonthDate = displayedMonth;
       _nextMonthDate = _addMonthsToMonthDate(widget.firstDate, monthPage + 1);
     });
+    if (notify) {
+      widget.onMonthChanged?.call(displayedMonth);
+    }
   }
 
   @override

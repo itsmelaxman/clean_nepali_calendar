@@ -55,6 +55,9 @@ Widget build(BuildContext context) {
     onDaySelected: (day){
         print(day.toString());
     },
+    onMonthChanged: (month){
+        print(month.toString());
+    },
   );
 }
 ```

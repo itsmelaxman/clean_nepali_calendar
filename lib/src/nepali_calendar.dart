@@ -2,6 +2,7 @@ part of clean_nepali_calendar;
 
 typedef TextBuilder = String Function(NepaliDateTime date, Language language);
 typedef HeaderGestureCallback = void Function(NepaliDateTime focusedDay);
+typedef MonthChangedCallback = void Function(NepaliDateTime focusedMonth);
 
 String formattedMonth(int month, [Language? language]) =>
     NepaliDateFormat.MMMM(language).format(NepaliDateTime(1970, month));
@@ -22,6 +23,7 @@ class CleanNepaliCalendar extends StatefulWidget {
     this.selectableDayPredicate,
     this.language = Language.nepali,
     this.onDaySelected,
+    this.onMonthChanged,
     this.headerStyle = const HeaderStyle(),
     this.calendarStyle = const CalendarStyle(),
     this.onHeaderTapped,
@@ -38,6 +40,7 @@ class CleanNepaliCalendar extends StatefulWidget {
   final NepaliDateTime? firstDate;
   final NepaliDateTime? lastDate;
   final Function(NepaliDateTime)? onDaySelected;
+  final MonthChangedCallback? onMonthChanged;
   final SelectableDayPredicate? selectableDayPredicate;
   final Language language;
   final CalendarStyle calendarStyle;
@@ -120,6 +123,7 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
       language: widget.language,
       selectedDate: _selectedDate,
       onChanged: _handleDayChanged,
+      onMonthChanged: widget.onMonthChanged,
       firstDate: widget.firstDate ?? NepaliDateTime(2000, 1),
       lastDate: widget.lastDate ?? NepaliDateTime(2095, 12),
       selectableDayPredicate: widget.selectableDayPredicate,

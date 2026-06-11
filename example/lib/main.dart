@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final NepaliDateTime first = NepaliDateTime(2075, 5);
-    final NepaliDateTime last = NepaliDateTime(2079, 3);
+    final NepaliDateTime last = NepaliDateTime(2085, 3);
     return Scaffold(
       appBar: AppBar(title: Text('Clean Nepali Calendar')),
       body: SingleChildScrollView(
@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
               },
 
               // headerBuilder: (_,__,___,____,______)=>Text("header"),
-              headerDayType: HeaderDayType.fullName,
+              headerDayType: HeaderDayType.halfName,
               controller: _nepaliCalendarController,
               onHeaderLongPressed: (date) {
                 print("header long pressed $date");
@@ -81,6 +81,9 @@ class HomePage extends StatelessWidget {
 
               onDaySelected: (day) {
                 print(day.toString());
+              },
+              onMonthChanged: (month) {
+                print("month changed $month");
               },
 
               // display the english date along with nepali date.
@@ -138,38 +141,34 @@ class HomePage extends StatelessWidget {
       padding: EdgeInsets.all(3),
       duration: Duration(milliseconds: 2000),
       decoration: _buildCellDecoration(),
-      child: Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: isWeekend ? Colors.red : null,
-                ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 20,
+                color: isWeekend ? Colors.red : null,
               ),
-
-              // to show events
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: CircleAvatar(radius: 1),
-              ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Text(
-                  nepaliDate.toDateTime().day.toString(),
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: isWeekend ? Colors.red : null,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          // to show events
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: CircleAvatar(radius: 1),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Text(
+              nepaliDate.toDateTime().day.toString(),
+              style: TextStyle(
+                fontSize: 8,
+                color: isWeekend ? Colors.red : null,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
