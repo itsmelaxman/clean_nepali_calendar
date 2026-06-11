@@ -2,7 +2,8 @@ part of clean_nepali_calendar;
 
 typedef HeaderDayBuilder = Widget Function(String headerName, int dayNumber);
 
-const double _kDayPickerRowHeight = 40.0;
+const double _kDayPickerHeaderHeight = 56.0;
+const double _kDayPickerCellHeight = 52.0;
 
 class _DayPickerGridDelegate extends SliverGridDelegate {
   const _DayPickerGridDelegate();
@@ -12,7 +13,7 @@ class _DayPickerGridDelegate extends SliverGridDelegate {
     const columnCount = 7;
     final tileWidth = constraints.crossAxisExtent / columnCount;
     final tileHeight = math.min(
-      _kDayPickerRowHeight,
+      _kDayPickerCellHeight,
       constraints.viewportMainAxisExtent / (_kMaxDayPickerRowCount + 1),
     );
     return SliverGridRegularTileLayout(

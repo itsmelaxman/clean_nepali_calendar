@@ -7,13 +7,15 @@ String formattedMonth(int month, [Language? language]) =>
     NepaliDateFormat.MMMM(language).format(NepaliDateTime(1970, month));
 
 const int _kMaxDayPickerRowCount = 6; // A 31 day month that starts on Saturday.
-// Two extra rows: one for the day-of-week header and one for the month header.
+// One month header plus seven day-picker rows: one weekday header and up to six
+// calendar weeks.
 const double _kMaxDayPickerHeight =
-    _kDayPickerRowHeight * (_kMaxDayPickerRowCount + 2);
+    _kDayPickerHeaderHeight +
+    (_kDayPickerCellHeight * (_kMaxDayPickerRowCount + 1));
 
 class CleanNepaliCalendar extends StatefulWidget {
   const CleanNepaliCalendar({
-    Key? key,
+    super.key,
     this.initialDate,
     this.firstDate,
     this.lastDate,
@@ -30,7 +32,7 @@ class CleanNepaliCalendar extends StatefulWidget {
     this.dateCellBuilder,
     this.enableVibration = true,
     this.headerBuilder,
-  }) : super(key: key);
+  });
 
   final NepaliDateTime? initialDate;
   final NepaliDateTime? firstDate;

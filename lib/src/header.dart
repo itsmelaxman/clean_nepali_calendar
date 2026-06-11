@@ -74,14 +74,14 @@ class _CalendarHeader extends StatelessWidget {
       child: (_headerBuilder != null)
           ? _headerBuilder(
               _headerStyle.decoration,
-              _kDayPickerRowHeight,
+              _kDayPickerHeaderHeight,
               _handleNextMonth,
               _handlePreviousMonth,
               date,
             )
           : Container(
               decoration: _headerStyle.decoration,
-              height: _kDayPickerRowHeight,
+              height: _kDayPickerHeaderHeight,
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -138,38 +138,55 @@ class _CalendarHeader extends StatelessWidget {
     return FadeTransition(
       opacity: _chevronOpacityAnimation,
       child: ExcludeSemantics(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: _headerStyle.centerHeaderTitle
+              ? Alignment.center
+              : Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 240),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _headerStyle.titleTextBuilder != null
+                              ? _headerStyle.titleTextBuilder!(date, _language)
+                              : '${formattedMonth(date.month, _language)} - ${_language == Language.english ? date.year : NepaliUnicode.convert('${date.year}')}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _headerStyle.titleTextStyle,
+                          textAlign: _headerStyle.centerHeaderTitle
+                              ? TextAlign.center
+                              : TextAlign.start,
+                        ),
+                      ),
+                      const Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
                   Text(
                     _headerStyle.titleTextBuilder != null
                         ? _headerStyle.titleTextBuilder!(date, _language)
-                        : '${formattedMonth(date.month, _language)} - ${_language == Language.english ? date.year : NepaliUnicode.convert('${date.year}')}',
-                    style: _headerStyle.titleTextStyle,
+                        : "${getFormattedEnglishMonth(date.toDateTime().month)}/${getFormattedEnglishMonth(date.toDateTime().month + 1)} - ${date.toDateTime().year}",
+                    style: _headerStyle.titleTextStyle.copyWith(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: _headerStyle.centerHeaderTitle
                         ? TextAlign.center
                         : TextAlign.start,
                   ),
-                  const Icon(Icons.arrow_drop_down),
                 ],
               ),
-              Text(
-                _headerStyle.titleTextBuilder != null
-                    ? _headerStyle.titleTextBuilder!(date, _language)
-                    : "${getFormattedEnglishMonth(date.toDateTime().month)}/${getFormattedEnglishMonth(date.toDateTime().month + 1)} - ${date.toDateTime().year}",
-                style: _headerStyle.titleTextStyle.copyWith(
-                  fontWeight: FontWeight.normal,
-                  fontSize: 14,
-                ),
-                textAlign: _headerStyle.centerHeaderTitle
-                    ? TextAlign.center
-                    : TextAlign.start,
-              ),
-            ],
+            ),
           ),
         ),
       ),
