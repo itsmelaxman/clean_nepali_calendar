@@ -1,6 +1,7 @@
 part of clean_nepali_calendar;
 
-typedef _SelectedDayCallback = void Function(NepaliDateTime day, {bool runCallback});
+typedef _SelectedDayCallback =
+    void Function(NepaliDateTime day, {bool runCallback});
 
 class NepaliCalendarController {
   NepaliDateTime? get selectedDay => _selectedDay;

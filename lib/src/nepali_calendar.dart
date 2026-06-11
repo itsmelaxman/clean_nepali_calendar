@@ -3,13 +3,8 @@ part of clean_nepali_calendar;
 typedef TextBuilder = String Function(NepaliDateTime date, Language language);
 typedef HeaderGestureCallback = void Function(NepaliDateTime focusedDay);
 
-String formattedMonth(
-  int month, [
-  Language? language,
-]) =>
-    NepaliDateFormat.MMMM(language).format(
-      NepaliDateTime(1970, month),
-    );
+String formattedMonth(int month, [Language? language]) =>
+    NepaliDateFormat.MMMM(language).format(NepaliDateTime(1970, month));
 
 const int _kMaxDayPickerRowCount = 6; // A 31 day month that starts on Saturday.
 // Two extra rows: one for the day-of-week header and one for the month header.
@@ -92,8 +87,9 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
   void didUpdateWidget(CleanNepaliCalendar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _selectedDate = widget.initialDate ?? NepaliDateTime.now();
-    widget.controller
-        .setSelectedDay(widget.initialDate ?? NepaliDateTime.now());
+    widget.controller.setSelectedDay(
+      widget.initialDate ?? NepaliDateTime.now(),
+    );
   }
 
   late NepaliDateTime _selectedDate;

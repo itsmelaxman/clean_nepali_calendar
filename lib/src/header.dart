@@ -1,12 +1,13 @@
 part of clean_nepali_calendar;
 
-typedef HeaderBuilder = Widget Function(
-  BoxDecoration decoration,
-  double height,
-  Function nextMonthHandler,
-  Function prevMonthHandler,
-  NepaliDateTime nepaliDateTime,
-);
+typedef HeaderBuilder =
+    Widget Function(
+      BoxDecoration decoration,
+      double height,
+      Function nextMonthHandler,
+      Function prevMonthHandler,
+      NepaliDateTime nepaliDateTime,
+    );
 
 class _CalendarHeader extends StatelessWidget {
   const _CalendarHeader({
@@ -25,18 +26,18 @@ class _CalendarHeader extends StatelessWidget {
     this.onHeaderLongPressed,
     required changeToToday,
     HeaderBuilder? headerBuilder,
-  })  : _chevronOpacityAnimation = chevronOpacityAnimation,
-        _isDisplayingFirstMonth = isDisplayingFirstMonth,
-        _previousMonthDate = previousMonthDate,
-        _isDisplayingLastMonth = isDisplayingLastMonth,
-        _nextMonthDate = nextMonthDate,
-        _headerStyle = headerStyle,
-        _handleNextMonth = handleNextMonth,
-        _handlePreviousMonth = handlePreviousMonth,
-        _language = language,
-        _changeToToday = changeToToday,
-        _headerBuilder = headerBuilder,
-        super(key: key);
+  }) : _chevronOpacityAnimation = chevronOpacityAnimation,
+       _isDisplayingFirstMonth = isDisplayingFirstMonth,
+       _previousMonthDate = previousMonthDate,
+       _isDisplayingLastMonth = isDisplayingLastMonth,
+       _nextMonthDate = nextMonthDate,
+       _headerStyle = headerStyle,
+       _handleNextMonth = handleNextMonth,
+       _handlePreviousMonth = handlePreviousMonth,
+       _language = language,
+       _changeToToday = changeToToday,
+       _headerBuilder = headerBuilder,
+       super(key: key);
 
   final Animation<double> _chevronOpacityAnimation;
   final bool _isDisplayingFirstMonth;
@@ -71,8 +72,13 @@ class _CalendarHeader extends StatelessWidget {
       onTap: _onHeaderTapped,
       onLongPress: _onHeaderLongPressed,
       child: (_headerBuilder != null)
-          ? _headerBuilder!(_headerStyle.decoration, _kDayPickerRowHeight,
-              _handleNextMonth, _handlePreviousMonth, date)
+          ? _headerBuilder(
+              _headerStyle.decoration,
+              _kDayPickerRowHeight,
+              _handleNextMonth,
+              _handlePreviousMonth,
+              date,
+            )
           : Container(
               decoration: _headerStyle.decoration,
               height: _kDayPickerRowHeight,
@@ -80,18 +86,14 @@ class _CalendarHeader extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: _headerStyle.centerHeaderTitle
-                        ? Center(
-                            child: _buildTitle(),
-                          )
+                        ? Center(child: _buildTitle())
                         : _buildTitle(),
                   ),
                   InkWell(
                     onTap: _changeToToday,
                     child: Text(
                       _language == Language.nepali ? "आज" : 'Today',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Semantics(
@@ -120,8 +122,9 @@ class _CalendarHeader extends StatelessWidget {
                         tooltip: _isDisplayingLastMonth
                             ? null
                             : 'Next month ${formattedMonth(_nextMonthDate.month, Language.english)} ${_nextMonthDate.year}',
-                        onPressed:
-                            _isDisplayingLastMonth ? null : _handleNextMonth,
+                        onPressed: _isDisplayingLastMonth
+                            ? null
+                            : _handleNextMonth,
                       ),
                     ),
                   ),
@@ -144,28 +147,24 @@ class _CalendarHeader extends StatelessWidget {
                 children: [
                   Text(
                     _headerStyle.titleTextBuilder != null
-                        ? _headerStyle.titleTextBuilder!(
-                            date,
-                            _language,
-                          )
+                        ? _headerStyle.titleTextBuilder!(date, _language)
                         : '${formattedMonth(date.month, _language)} - ${_language == Language.english ? date.year : NepaliUnicode.convert('${date.year}')}',
                     style: _headerStyle.titleTextStyle,
                     textAlign: _headerStyle.centerHeaderTitle
                         ? TextAlign.center
                         : TextAlign.start,
                   ),
-                  const Icon(Icons.arrow_drop_down)
+                  const Icon(Icons.arrow_drop_down),
                 ],
               ),
               Text(
                 _headerStyle.titleTextBuilder != null
-                    ? _headerStyle.titleTextBuilder!(
-                        date,
-                        _language,
-                      )
+                    ? _headerStyle.titleTextBuilder!(date, _language)
                     : "${getFormattedEnglishMonth(date.toDateTime().month)}/${getFormattedEnglishMonth(date.toDateTime().month + 1)} - ${date.toDateTime().year}",
-                style: _headerStyle.titleTextStyle
-                    .copyWith(fontWeight: FontWeight.normal, fontSize: 14),
+                style: _headerStyle.titleTextStyle.copyWith(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                ),
                 textAlign: _headerStyle.centerHeaderTitle
                     ? TextAlign.center
                     : TextAlign.start,
