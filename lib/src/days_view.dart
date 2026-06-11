@@ -3,17 +3,20 @@ part of clean_nepali_calendar;
 typedef HeaderDayBuilder = Widget Function(String headerName, int dayNumber);
 
 const double _kDayPickerHeaderHeight = 56.0;
-const double _kDayPickerCellHeight = 52.0;
+const double _kDayPickerDefaultCellHeight = 40.0;
+const double _kDayPickerDetailedCellHeight = 52.0;
 
 class _DayPickerGridDelegate extends SliverGridDelegate {
-  const _DayPickerGridDelegate();
+  const _DayPickerGridDelegate(this.cellHeight);
+
+  final double cellHeight;
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     const columnCount = 7;
     final tileWidth = constraints.crossAxisExtent / columnCount;
     final tileHeight = math.min(
-      _kDayPickerCellHeight,
+      cellHeight,
       constraints.viewportMainAxisExtent / (_kMaxDayPickerRowCount + 1),
     );
     return SliverGridRegularTileLayout(
@@ -27,10 +30,10 @@ class _DayPickerGridDelegate extends SliverGridDelegate {
   }
 
   @override
-  bool shouldRelayout(_DayPickerGridDelegate oldDelegate) => false;
+  bool shouldRelayout(_DayPickerGridDelegate oldDelegate) {
+    return cellHeight != oldDelegate.cellHeight;
+  }
 }
-
-const _DayPickerGridDelegate _kDayPickerGridDelegate = _DayPickerGridDelegate();
 
 class _DaysView extends StatelessWidget {
   _DaysView({
@@ -75,6 +78,10 @@ class _DaysView extends StatelessWidget {
   final HeaderDayType headerDayType;
   final HeaderDayBuilder? headerDayBuilder;
   final DateCellBuilder? dateCellBuilder;
+
+  double get _cellHeight => dateCellBuilder == null
+      ? _kDayPickerDefaultCellHeight
+      : _kDayPickerDetailedCellHeight;
 
   List<Widget> _getDayHeaders(
     Language language,
@@ -216,7 +223,7 @@ class _DaysView extends StatelessWidget {
         Flexible(
           child: GridView.custom(
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: _kDayPickerGridDelegate,
+            gridDelegate: _DayPickerGridDelegate(_cellHeight),
             childrenDelegate: SliverChildListDelegate(
               labels,
               addRepaintBoundaries: false,

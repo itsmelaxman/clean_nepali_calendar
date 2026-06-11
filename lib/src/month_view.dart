@@ -212,6 +212,13 @@ class _MonthViewState extends State<_MonthView>
   late NepaliDateTime _previousMonthDate;
   late NepaliDateTime _nextMonthDate;
 
+  double get _cellHeight => widget.dateCellBuilder == null
+      ? _kDayPickerDefaultCellHeight
+      : _kDayPickerDetailedCellHeight;
+
+  double get _maxDayPickerHeight =>
+      _kDayPickerHeaderHeight + (_cellHeight * (_kMaxDayPickerRowCount + 1));
+
   void _handleMonthPageChanged(int monthPage, {bool notify = true}) {
     late NepaliDateTime displayedMonth;
     setState(() {
@@ -231,7 +238,7 @@ class _MonthViewState extends State<_MonthView>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: _kMaxDayPickerHeight,
+      height: _maxDayPickerHeight,
       child: Column(
         children: <Widget>[
           _CalendarHeader(
