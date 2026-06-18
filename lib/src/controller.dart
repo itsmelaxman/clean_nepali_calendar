@@ -16,6 +16,10 @@ class NepaliCalendarController {
     _selectedDay = initialDay;
   }
 
+  void _dispose() {
+    _selectedDayCallback = null;
+  }
+
   void setSelectedDay(
     NepaliDateTime value, {
     bool isProgrammatic = true,

@@ -57,10 +57,12 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
   @override
   void initState() {
     super.initState();
-    _selectedDate = widget.initialDate ?? NepaliDateTime.now();
+    _selectedDate = _clampDateToRange(
+      widget.initialDate ?? NepaliDateTime.now(),
+    );
     widget.controller._init(
       selectedDayCallback: _handleDayChanged,
-      initialDay: widget.initialDate ?? NepaliDateTime.now(),
+      initialDay: _selectedDate,
     );
   }
 
@@ -86,27 +88,69 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
   @override
   void didUpdateWidget(CleanNepaliCalendar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _selectedDate = widget.initialDate ?? NepaliDateTime.now();
-    widget.controller.setSelectedDay(
-      widget.initialDate ?? NepaliDateTime.now(),
-    );
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller._dispose();
+      widget.controller._init(
+        selectedDayCallback: _handleDayChanged,
+        initialDay: _selectedDate,
+      );
+    }
+
+    final dateRangeChanged =
+        widget.firstDate != oldWidget.firstDate ||
+        widget.lastDate != oldWidget.lastDate;
+    final initialDateChanged =
+        widget.initialDate != null &&
+        widget.initialDate != oldWidget.initialDate;
+    if (initialDateChanged || dateRangeChanged) {
+      final selectedDate = initialDateChanged
+          ? _clampDateToRange(widget.initialDate!)
+          : _clampDateToRange(_selectedDate);
+      setState(() {
+        _selectedDate = selectedDate;
+        _pageToSelectedDate = true;
+      });
+      widget.controller.setSelectedDay(_selectedDate, isProgrammatic: false);
+    }
   }
 
   late NepaliDateTime _selectedDate;
+  bool _pageToSelectedDate = true;
   final GlobalKey _pickerKey = GlobalKey();
 
   void _vibrate() {
     HapticFeedback.vibrate();
   }
 
-  void _handleDayChanged(NepaliDateTime value, {bool runCallback = true}) {
+  NepaliDateTime get _firstDate => widget.firstDate ?? NepaliDateTime(2000, 1);
+
+  NepaliDateTime get _lastDate => widget.lastDate ?? NepaliDateTime(2095, 12);
+
+  NepaliDateTime _clampDateToRange(NepaliDateTime date) {
+    if (date.isBefore(_firstDate)) {
+      return _firstDate;
+    }
+    if (date.isAfter(_lastDate)) {
+      return _lastDate;
+    }
+
+    return date;
+  }
+
+  void _handleDayChanged(
+    NepaliDateTime value, {
+    bool runCallback = true,
+    bool pageToSelectedDate = true,
+  }) {
+    final selectedDate = _clampDateToRange(value);
     if (widget.enableVibration) _vibrate();
     setState(() {
-      widget.controller.setSelectedDay(value, isProgrammatic: false);
-      _selectedDate = value;
+      widget.controller.setSelectedDay(selectedDate, isProgrammatic: false);
+      _selectedDate = selectedDate;
+      _pageToSelectedDate = pageToSelectedDate;
     });
     if (runCallback && widget.onDaySelected != null) {
-      widget.onDaySelected!(value);
+      widget.onDaySelected!(selectedDate);
     }
   }
 
@@ -117,10 +161,14 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
       calendarStyle: widget.calendarStyle,
       language: widget.language,
       selectedDate: _selectedDate,
-      onChanged: _handleDayChanged,
+      onChanged: (value) {
+        _handleDayChanged(value, pageToSelectedDate: false);
+      },
+      onDisplayedDateChanged: _handleDayChanged,
+      pageToSelectedDate: _pageToSelectedDate,
       onMonthChanged: widget.onMonthChanged,
-      firstDate: widget.firstDate ?? NepaliDateTime(2000, 1),
-      lastDate: widget.lastDate ?? NepaliDateTime(2095, 12),
+      firstDate: _firstDate,
+      lastDate: _lastDate,
       selectableDayPredicate: widget.selectableDayPredicate,
       onHeaderTapped: widget.onHeaderTapped,
       onHeaderLongPressed: widget.onHeaderLongPressed,
@@ -135,6 +183,12 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
   @override
   Widget build(BuildContext context) {
     return _buildPicker();
+  }
+
+  @override
+  void dispose() {
+    widget.controller._dispose();
+    super.dispose();
   }
 }
 

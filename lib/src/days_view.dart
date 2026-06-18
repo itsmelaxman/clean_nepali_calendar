@@ -53,7 +53,8 @@ class _DaysView extends StatelessWidget {
     this.headerDayBuilder,
     this.dateCellBuilder,
   }) : assert(!firstDate.isAfter(lastDate)),
-       assert(selectedDate.isAfter(firstDate)),
+       assert(!selectedDate.isBefore(firstDate)),
+       assert(!selectedDate.isAfter(lastDate)),
        super(key: key);
 
   final NepaliDateTime selectedDate;

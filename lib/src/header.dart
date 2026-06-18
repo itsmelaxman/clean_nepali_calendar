@@ -171,9 +171,7 @@ class _CalendarHeader extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    _headerStyle.titleTextBuilder != null
-                        ? _headerStyle.titleTextBuilder!(date, _language)
-                        : "${getFormattedEnglishMonth(date.toDateTime().month)}/${getFormattedEnglishMonth(date.toDateTime().month + 1)} - ${date.toDateTime().year}",
+                    _buildGregorianMonthRangeLabel(date),
                     style: _headerStyle.titleTextStyle.copyWith(
                       fontWeight: FontWeight.normal,
                       fontSize: 14,
@@ -194,6 +192,20 @@ class _CalendarHeader extends StatelessWidget {
   }
 }
 
+String _buildGregorianMonthRangeLabel(NepaliDateTime date) {
+  final firstGregorianDate = NepaliDateTime(date.year, date.month).toDateTime();
+  final lastGregorianDate = NepaliDateTime(
+    date.year,
+    date.month,
+    date.totalDays,
+  ).toDateTime();
+  final yearLabel = firstGregorianDate.year == lastGregorianDate.year
+      ? '${firstGregorianDate.year}'
+      : '${firstGregorianDate.year}/${lastGregorianDate.year}';
+
+  return '${getFormattedEnglishMonth(firstGregorianDate.month)}/${getFormattedEnglishMonth(lastGregorianDate.month)} - $yearLabel';
+}
+
 String getFormattedEnglishMonth(int mnth) {
   switch (mnth) {
     case DateTime.january:
@@ -204,6 +216,8 @@ String getFormattedEnglishMonth(int mnth) {
       return "Mar";
     case DateTime.april:
       return "April";
+    case DateTime.may:
+      return "May";
     case DateTime.june:
       return "Jun";
     case DateTime.july:

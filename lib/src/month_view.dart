@@ -7,6 +7,8 @@ class _MonthView extends StatefulWidget {
     Key? key,
     required this.selectedDate,
     required this.onChanged,
+    required this.onDisplayedDateChanged,
+    required this.pageToSelectedDate,
     this.onMonthChanged,
     required this.firstDate,
     required this.lastDate,
@@ -22,12 +24,15 @@ class _MonthView extends StatefulWidget {
     this.dateCellBuilder,
     this.headerBuilder,
   }) : assert(!firstDate.isAfter(lastDate)),
-       assert(selectedDate.isAfter(firstDate)),
+       assert(!selectedDate.isBefore(firstDate)),
+       assert(!selectedDate.isAfter(lastDate)),
        super(key: key);
 
   final NepaliDateTime selectedDate;
 
   final ValueChanged<NepaliDateTime> onChanged;
+  final ValueChanged<NepaliDateTime> onDisplayedDateChanged;
+  final bool pageToSelectedDate;
   final MonthChangedCallback? onMonthChanged;
 
   final NepaliDateTime firstDate;
@@ -92,9 +97,14 @@ class _MonthViewState extends State<_MonthView>
   @override
   void didUpdateWidget(_MonthView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedDate != oldWidget.selectedDate) {
+    if (widget.firstDate != oldWidget.firstDate) {
       final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
-      _dayPickerController = PageController(initialPage: monthPage);
+      _jumpToMonthPage(monthPage);
+      _handleMonthPageChanged(monthPage, notify: false);
+    } else if (widget.pageToSelectedDate &&
+        widget.selectedDate != oldWidget.selectedDate) {
+      final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
+      _jumpToMonthPage(monthPage);
       _handleMonthPageChanged(monthPage, notify: false);
     }
   }
@@ -197,6 +207,15 @@ class _MonthViewState extends State<_MonthView>
     }
   }
 
+  void _handleToday() {
+    final today = NepaliDateTime.now();
+    if (today.isBefore(widget.firstDate) || today.isAfter(widget.lastDate)) {
+      return;
+    }
+
+    widget.onDisplayedDateChanged(today);
+  }
+
   bool get _isDisplayingFirstMonth {
     return !_currentDisplayedMonthDate.isAfter(
       NepaliDateTime(widget.firstDate.year, widget.firstDate.month),
@@ -218,6 +237,15 @@ class _MonthViewState extends State<_MonthView>
 
   double get _maxDayPickerHeight =>
       _kDayPickerHeaderHeight + (_cellHeight * (_kMaxDayPickerRowCount + 1));
+
+  void _jumpToMonthPage(int monthPage) {
+    if (_dayPickerController.hasClients) {
+      _dayPickerController.jumpToPage(monthPage);
+    } else {
+      _dayPickerController.dispose();
+      _dayPickerController = PageController(initialPage: monthPage);
+    }
+  }
 
   void _handleMonthPageChanged(int monthPage, {bool notify = true}) {
     late NepaliDateTime displayedMonth;
@@ -254,9 +282,7 @@ class _MonthViewState extends State<_MonthView>
             date: _currentDisplayedMonthDate,
             isDisplayingLastMonth: _isDisplayingLastMonth,
             nextMonthDate: _nextMonthDate,
-            changeToToday: () {
-              widget.onChanged(NepaliDateTime.now());
-            },
+            changeToToday: _handleToday,
             headerBuilder: widget.headerBuilder,
           ),
           Expanded(
@@ -276,7 +302,6 @@ class _MonthViewState extends State<_MonthView>
                       },
                       child: PageView.builder(
                         dragStartBehavior: widget.dragStartBehavior,
-                        key: ValueKey<NepaliDateTime>(widget.selectedDate),
                         controller: _dayPickerController,
                         scrollDirection: Axis.horizontal,
                         itemCount:
