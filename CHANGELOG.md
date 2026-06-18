@@ -1,3 +1,13 @@
+# 2.1.0
+* Added `onMonthChanged` callback support.
+* Fixed month header Gregorian span rendering and custom title duplication.
+* Fixed calendar selection/page navigation so tapping a day after scrolling keeps the displayed month stable.
+* Fixed selected-date range handling for initial, updated, and programmatic selections.
+* Fixed `firstDate` boundary handling so the first selectable day can be selected.
+* Fixed controller lifecycle cleanup when replacing or disposing controllers.
+* Fixed custom dual-date cell overflow by using dynamic picker sizing.
+* Updated the example Android project to the modern Gradle/Kotlin setup.
+
 # 2.0.1
 * Update version and dependencies
 
