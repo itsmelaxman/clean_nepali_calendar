@@ -89,7 +89,6 @@ class HomePage extends StatelessWidget {
               // display the english date along with nepali date.
               dateCellBuilder: cellBuilder,
             ),
-            Text('hello'),
           ],
         ),
       ),
