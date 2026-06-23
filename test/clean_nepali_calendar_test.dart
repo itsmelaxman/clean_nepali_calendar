@@ -52,6 +52,37 @@ void main() {
     expect(find.byType(CleanNepaliCalendar), findsOneWidget);
   });
 
+  testWidgets('sizes calendar to visible month rows', (tester) async {
+    final initialDate = NepaliDateTime(2083, 3);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              CleanNepaliCalendar(
+                controller: NepaliCalendarController(),
+                initialDate: initialDate,
+                firstDate: NepaliDateTime(2083, 1),
+                lastDate: NepaliDateTime(2083, 12),
+                enableVibration: false,
+              ),
+              const Text('hello'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final expectedCalendarHeight = calendarHeightForMonth(initialDate);
+
+    expect(
+      tester.getSize(find.byType(CleanNepaliCalendar)).height,
+      expectedCalendarHeight,
+    );
+    expect(tester.getTopLeft(find.text('hello')).dy, expectedCalendarHeight);
+  });
+
   testWidgets('clamps initial date to configured date range', (tester) async {
     final controller = NepaliCalendarController();
     final firstDate = NepaliDateTime(2080, 1, 1);
@@ -331,6 +362,13 @@ String gregorianMonthSpanLabel(NepaliDateTime date) {
       : '${firstGregorianDate.year}/${lastGregorianDate.year}';
 
   return '${englishMonth(firstGregorianDate.month)}/${englishMonth(lastGregorianDate.month)} - $yearLabel';
+}
+
+double calendarHeightForMonth(NepaliDateTime date) {
+  final dayRows = ((date.weekday - 1 + date.totalDays) / 7).ceil();
+  const headerHeight = 56.0;
+  const defaultCellHeight = 40.0;
+  return headerHeight + defaultCellHeight * (dayRows + 1);
 }
 
 String englishMonth(int month) {

@@ -7,7 +7,10 @@ typedef MonthChangedCallback = void Function(NepaliDateTime focusedMonth);
 String formattedMonth(int month, [Language? language]) =>
     NepaliDateFormat.MMMM(language).format(NepaliDateTime(1970, month));
 
-const int _kMaxDayPickerRowCount = 6; // A 31 day month that starts on Saturday.
+int _dayPickerRowCount(NepaliDateTime month, {required bool renderDaysOfWeek}) {
+  final dayRows = ((month.weekday - 1 + month.totalDays) / 7).ceil();
+  return dayRows + (renderDaysOfWeek ? 1 : 0);
+}
 
 class CleanNepaliCalendar extends StatefulWidget {
   const CleanNepaliCalendar({
@@ -78,7 +81,8 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
     textDirection = Directionality.of(context);
     if (!_announcedInitialDate) {
       _announcedInitialDate = true;
-      SemanticsService.announce(
+      SemanticsService.sendAnnouncement(
+        View.of(context),
         NepaliDateFormat.yMMMMd().format(_selectedDate),
         textDirection,
       );

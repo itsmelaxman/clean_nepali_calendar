@@ -235,8 +235,13 @@ class _MonthViewState extends State<_MonthView>
       ? _kDayPickerDefaultCellHeight
       : _kDayPickerDetailedCellHeight;
 
-  double get _maxDayPickerHeight =>
-      _kDayPickerHeaderHeight + (_cellHeight * (_kMaxDayPickerRowCount + 1));
+  int get _currentDayPickerRowCount => _dayPickerRowCount(
+    _currentDisplayedMonthDate,
+    renderDaysOfWeek: widget.calendarStyle.renderDaysOfWeek,
+  );
+
+  double get _dayPickerHeight =>
+      _kDayPickerHeaderHeight + (_cellHeight * _currentDayPickerRowCount);
 
   void _jumpToMonthPage(int monthPage) {
     if (_dayPickerController.hasClients) {
@@ -266,7 +271,7 @@ class _MonthViewState extends State<_MonthView>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: _maxDayPickerHeight,
+      height: _dayPickerHeight,
       child: Column(
         children: <Widget>[
           _CalendarHeader(

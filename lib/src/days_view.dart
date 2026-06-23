@@ -7,9 +7,13 @@ const double _kDayPickerDefaultCellHeight = 40.0;
 const double _kDayPickerDetailedCellHeight = 52.0;
 
 class _DayPickerGridDelegate extends SliverGridDelegate {
-  const _DayPickerGridDelegate(this.cellHeight);
+  const _DayPickerGridDelegate({
+    required this.cellHeight,
+    required this.rowCount,
+  });
 
   final double cellHeight;
+  final int rowCount;
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
@@ -17,7 +21,7 @@ class _DayPickerGridDelegate extends SliverGridDelegate {
     final tileWidth = constraints.crossAxisExtent / columnCount;
     final tileHeight = math.min(
       cellHeight,
-      constraints.viewportMainAxisExtent / (_kMaxDayPickerRowCount + 1),
+      constraints.viewportMainAxisExtent / rowCount,
     );
     return SliverGridRegularTileLayout(
       crossAxisCount: columnCount,
@@ -31,7 +35,8 @@ class _DayPickerGridDelegate extends SliverGridDelegate {
 
   @override
   bool shouldRelayout(_DayPickerGridDelegate oldDelegate) {
-    return cellHeight != oldDelegate.cellHeight;
+    return cellHeight != oldDelegate.cellHeight ||
+        rowCount != oldDelegate.rowCount;
   }
 }
 
@@ -145,6 +150,10 @@ class _DaysView extends StatelessWidget {
     final month = displayedMonth.month;
     final daysInMonth = displayedMonth.totalDays;
     final firstDayOffset = displayedMonth.weekday - 1;
+    final rowCount = _dayPickerRowCount(
+      displayedMonth,
+      renderDaysOfWeek: calendarStyle.renderDaysOfWeek,
+    );
     final labels = <Widget>[];
     if (calendarStyle.renderDaysOfWeek) {
       labels.addAll(
@@ -224,7 +233,10 @@ class _DaysView extends StatelessWidget {
         Flexible(
           child: GridView.custom(
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: _DayPickerGridDelegate(_cellHeight),
+            gridDelegate: _DayPickerGridDelegate(
+              cellHeight: _cellHeight,
+              rowCount: rowCount,
+            ),
             childrenDelegate: SliverChildListDelegate(
               labels,
               addRepaintBoundaries: false,
