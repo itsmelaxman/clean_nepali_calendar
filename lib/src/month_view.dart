@@ -7,6 +7,9 @@ class _MonthView extends StatefulWidget {
     Key? key,
     required this.selectedDate,
     required this.onChanged,
+    required this.onDisplayedDateChanged,
+    required this.pageToSelectedDate,
+    this.onMonthChanged,
     required this.firstDate,
     required this.lastDate,
     required this.language,
@@ -21,12 +24,16 @@ class _MonthView extends StatefulWidget {
     this.dateCellBuilder,
     this.headerBuilder,
   })  : assert(!firstDate.isAfter(lastDate)),
-        assert(selectedDate.isAfter(firstDate)),
+        assert(!selectedDate.isBefore(firstDate)),
+        assert(!selectedDate.isAfter(lastDate)),
         super(key: key);
 
   final NepaliDateTime selectedDate;
 
   final ValueChanged<NepaliDateTime> onChanged;
+  final ValueChanged<NepaliDateTime> onDisplayedDateChanged;
+  final bool pageToSelectedDate;
+  final MonthChangedCallback? onMonthChanged;
 
   final NepaliDateTime firstDate;
 
@@ -57,9 +64,10 @@ class _MonthView extends StatefulWidget {
 
 class _MonthViewState extends State<_MonthView>
     with SingleTickerProviderStateMixin {
-  static final Animatable<double> _chevronOpacityTween =
-      Tween<double>(begin: 1.0, end: 0.0)
-          .chain(CurveTween(curve: Curves.easeInOut));
+  static final Animatable<double> _chevronOpacityTween = Tween<double>(
+    begin: 1.0,
+    end: 0.0,
+  ).chain(CurveTween(curve: Curves.easeInOut));
 
   @override
   void initState() {
@@ -67,7 +75,7 @@ class _MonthViewState extends State<_MonthView>
     // Initially display the pre-selected date.
     final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
     _dayPickerController = PageController(initialPage: monthPage);
-    _handleMonthPageChanged(monthPage);
+    _handleMonthPageChanged(monthPage, notify: false);
     _updateCurrentDate();
 
     // Setup the fade animation for chevrons
@@ -78,17 +86,33 @@ class _MonthViewState extends State<_MonthView>
 
     _chevronOpacityAnimation = widget.headerStyle.enableFadeTransition
         ? _chevronOpacityController.drive(_chevronOpacityTween)
-        : _chevronOpacityController.drive(Tween<double>(begin: 1.0, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)));
+        : _chevronOpacityController.drive(
+            Tween<double>(
+              begin: 1.0,
+              end: 1.0,
+            ).chain(CurveTween(curve: Curves.easeInOut)),
+          );
   }
 
   @override
   void didUpdateWidget(_MonthView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedDate != oldWidget.selectedDate) {
+
+    final dateRangeChanged = widget.firstDate != oldWidget.firstDate ||
+        widget.lastDate != oldWidget.lastDate;
+
+    final selectedDateChanged = widget.selectedDate != oldWidget.selectedDate;
+
+    if (dateRangeChanged ||
+        (widget.pageToSelectedDate && selectedDateChanged)) {
       final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
-      _dayPickerController = PageController(initialPage: monthPage);
-      _handleMonthPageChanged(monthPage);
+
+      _jumpToMonthPage(monthPage);
+
+      _handleMonthPageChanged(
+        monthPage,
+        notify: false,
+      );
     }
   }
 
@@ -115,8 +139,9 @@ class _MonthViewState extends State<_MonthView>
       _todayDate.day + 1,
     );
     var timeUntilTomorrow = tomorrow.difference(_todayDate);
-    timeUntilTomorrow +=
-        const Duration(seconds: 1); // so we don't miss it by rounding
+    timeUntilTomorrow += const Duration(
+      seconds: 1,
+    ); // so we don't miss it by rounding
     _timer?.cancel();
     _timer = Timer(timeUntilTomorrow, () {
       setState(_updateCurrentDate);
@@ -139,10 +164,7 @@ class _MonthViewState extends State<_MonthView>
       year += months ~/ 12;
       months = months % 12;
     }
-    return NepaliDateTime(
-      monthDate.year + year,
-      months,
-    );
+    return NepaliDateTime(monthDate.year + year, months);
   }
 
   Widget _buildItems(BuildContext context, int index) {
@@ -169,50 +191,94 @@ class _MonthViewState extends State<_MonthView>
   void _handleNextMonth() {
     if (!_isDisplayingLastMonth) {
       SemanticsService.announce(
-          "${formattedMonth(_nextMonthDate.month, Language.english)} ${_nextMonthDate.year}",
-          textDirection);
+        "${formattedMonth(_nextMonthDate.month, Language.english)} ${_nextMonthDate.year}",
+        textDirection,
+      );
       _dayPickerController.nextPage(
-          duration: _kMonthScrollDuration, curve: Curves.ease);
+        duration: _kMonthScrollDuration,
+        curve: Curves.ease,
+      );
     }
   }
 
   void _handlePreviousMonth() {
     if (!_isDisplayingFirstMonth) {
       SemanticsService.announce(
-          "${formattedMonth(_previousMonthDate.month, Language.english)} ${_previousMonthDate.year}",
-          textDirection);
+        "${formattedMonth(_previousMonthDate.month, Language.english)} ${_previousMonthDate.year}",
+        textDirection,
+      );
       _dayPickerController.previousPage(
-          duration: _kMonthScrollDuration, curve: Curves.ease);
+        duration: _kMonthScrollDuration,
+        curve: Curves.ease,
+      );
     }
   }
 
+  void _handleToday() {
+    final today = NepaliDateTime.now();
+    if (today.isBefore(widget.firstDate) || today.isAfter(widget.lastDate)) {
+      return;
+    }
+
+    widget.onDisplayedDateChanged(today);
+  }
+
   bool get _isDisplayingFirstMonth {
-    return !_currentDisplayedMonthDate
-        .isAfter(NepaliDateTime(widget.firstDate.year, widget.firstDate.month));
+    return !_currentDisplayedMonthDate.isAfter(
+      NepaliDateTime(widget.firstDate.year, widget.firstDate.month),
+    );
   }
 
   bool get _isDisplayingLastMonth {
-    return !_currentDisplayedMonthDate
-        .isBefore(NepaliDateTime(widget.lastDate.year, widget.lastDate.month));
+    return !_currentDisplayedMonthDate.isBefore(
+      NepaliDateTime(widget.lastDate.year, widget.lastDate.month),
+    );
   }
 
   late NepaliDateTime _previousMonthDate;
   late NepaliDateTime _nextMonthDate;
 
-  void _handleMonthPageChanged(int monthPage) {
+  double get _cellHeight => widget.dateCellBuilder == null
+      ? _kDayPickerDefaultCellHeight
+      : _kDayPickerDetailedCellHeight;
+
+  int get _currentDayPickerRowCount => _dayPickerRowCount(
+        _currentDisplayedMonthDate,
+        renderDaysOfWeek: widget.calendarStyle.renderDaysOfWeek,
+      );
+
+  double get _dayPickerHeight =>
+      _kDayPickerHeaderHeight + (_cellHeight * _currentDayPickerRowCount);
+
+  void _jumpToMonthPage(int monthPage) {
+    if (_dayPickerController.hasClients) {
+      _dayPickerController.jumpToPage(monthPage);
+    } else {
+      _dayPickerController.dispose();
+      _dayPickerController = PageController(initialPage: monthPage);
+    }
+  }
+
+  void _handleMonthPageChanged(int monthPage, {bool notify = true}) {
+    late NepaliDateTime displayedMonth;
     setState(() {
-      _previousMonthDate =
-          _addMonthsToMonthDate(widget.firstDate, monthPage - 1);
-      _currentDisplayedMonthDate =
-          _addMonthsToMonthDate(widget.firstDate, monthPage);
+      _previousMonthDate = _addMonthsToMonthDate(
+        widget.firstDate,
+        monthPage - 1,
+      );
+      displayedMonth = _addMonthsToMonthDate(widget.firstDate, monthPage);
+      _currentDisplayedMonthDate = displayedMonth;
       _nextMonthDate = _addMonthsToMonthDate(widget.firstDate, monthPage + 1);
     });
+    if (notify) {
+      widget.onMonthChanged?.call(displayedMonth);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: _kMaxDayPickerHeight,
+      height: _dayPickerHeight,
       child: Column(
         children: <Widget>[
           _CalendarHeader(
@@ -228,9 +294,7 @@ class _MonthViewState extends State<_MonthView>
             date: _currentDisplayedMonthDate,
             isDisplayingLastMonth: _isDisplayingLastMonth,
             nextMonthDate: _nextMonthDate,
-            changeToToday: () {
-              widget.onChanged(NepaliDateTime.now());
-            },
+            changeToToday: _handleToday,
             headerBuilder: widget.headerBuilder,
           ),
           Expanded(
@@ -250,7 +314,6 @@ class _MonthViewState extends State<_MonthView>
                       },
                       child: PageView.builder(
                         dragStartBehavior: widget.dragStartBehavior,
-                        key: ValueKey<NepaliDateTime>(widget.selectedDate),
                         controller: _dayPickerController,
                         scrollDirection: Axis.horizontal,
                         itemCount:

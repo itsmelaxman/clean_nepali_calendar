@@ -2,17 +2,27 @@ part of clean_nepali_calendar;
 
 typedef HeaderDayBuilder = Widget Function(String headerName, int dayNumber);
 
-const double _kDayPickerRowHeight = 40.0;
+const double _kDayPickerHeaderHeight = 56.0;
+const double _kDayPickerDefaultCellHeight = 40.0;
+const double _kDayPickerDetailedCellHeight = 52.0;
 
 class _DayPickerGridDelegate extends SliverGridDelegate {
-  const _DayPickerGridDelegate();
+  const _DayPickerGridDelegate({
+    required this.cellHeight,
+    required this.rowCount,
+  });
+
+  final double cellHeight;
+  final int rowCount;
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     const columnCount = 7;
     final tileWidth = constraints.crossAxisExtent / columnCount;
-    final tileHeight = math.min(_kDayPickerRowHeight,
-        constraints.viewportMainAxisExtent / (_kMaxDayPickerRowCount + 1));
+    final tileHeight = math.min(
+      cellHeight,
+      constraints.viewportMainAxisExtent / rowCount,
+    );
     return SliverGridRegularTileLayout(
       crossAxisCount: columnCount,
       mainAxisStride: tileHeight,
@@ -24,10 +34,11 @@ class _DayPickerGridDelegate extends SliverGridDelegate {
   }
 
   @override
-  bool shouldRelayout(_DayPickerGridDelegate oldDelegate) => false;
+  bool shouldRelayout(_DayPickerGridDelegate oldDelegate) {
+    return cellHeight != oldDelegate.cellHeight ||
+        rowCount != oldDelegate.rowCount;
+  }
 }
-
-const _DayPickerGridDelegate _kDayPickerGridDelegate = _DayPickerGridDelegate();
 
 class _DaysView extends StatelessWidget {
   _DaysView({
@@ -47,7 +58,8 @@ class _DaysView extends StatelessWidget {
     this.headerDayBuilder,
     this.dateCellBuilder,
   })  : assert(!firstDate.isAfter(lastDate)),
-        assert(selectedDate.isAfter(firstDate)),
+        assert(!selectedDate.isBefore(firstDate)),
+        assert(!selectedDate.isAfter(lastDate)),
         super(key: key);
 
   final NepaliDateTime selectedDate;
@@ -73,8 +85,16 @@ class _DaysView extends StatelessWidget {
   final HeaderDayBuilder? headerDayBuilder;
   final DateCellBuilder? dateCellBuilder;
 
-  List<Widget> _getDayHeaders(Language language, TextStyle? headerStyle,
-      HeaderDayType headerDayType, HeaderDayBuilder? builder) {
+  double get _cellHeight => dateCellBuilder == null
+      ? _kDayPickerDefaultCellHeight
+      : _kDayPickerDetailedCellHeight;
+
+  List<Widget> _getDayHeaders(
+    Language language,
+    TextStyle? headerStyle,
+    HeaderDayType headerDayType,
+    HeaderDayBuilder? builder,
+  ) {
     List<String> headers;
     switch (headerDayType) {
       case HeaderDayType.fullName:
@@ -130,11 +150,19 @@ class _DaysView extends StatelessWidget {
     final month = displayedMonth.month;
     final daysInMonth = displayedMonth.totalDays;
     final firstDayOffset = displayedMonth.weekday - 1;
+    final rowCount = _dayPickerRowCount(
+      displayedMonth,
+      renderDaysOfWeek: calendarStyle.renderDaysOfWeek,
+    );
     final labels = <Widget>[];
     if (calendarStyle.renderDaysOfWeek) {
       labels.addAll(
-        _getDayHeaders(language, themeData.textTheme.caption, headerDayType,
-            headerDayBuilder),
+        _getDayHeaders(
+          language,
+          themeData.textTheme.bodySmall,
+          headerDayType,
+          headerDayBuilder,
+        ),
       );
     }
 
@@ -202,9 +230,14 @@ class _DaysView extends StatelessWidget {
         Flexible(
           child: GridView.custom(
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: _kDayPickerGridDelegate,
-            childrenDelegate:
-                SliverChildListDelegate(labels, addRepaintBoundaries: false),
+            gridDelegate: _DayPickerGridDelegate(
+              cellHeight: _cellHeight,
+              rowCount: rowCount,
+            ),
+            childrenDelegate: SliverChildListDelegate(
+              labels,
+              addRepaintBoundaries: false,
+            ),
           ),
         ),
       ],
@@ -219,7 +252,7 @@ final List<String> dayHeaderFullNameEnglish = [
   "Wednesday",
   "Thursday",
   "Friday",
-  "Saturday"
+  "Saturday",
 ];
 final List<String> dayHeaderFullNameNepali = [
   "आइतबार",
@@ -228,7 +261,7 @@ final List<String> dayHeaderFullNameNepali = [
   "बुधबार",
   "बिहीबार",
   "शुक्रबार",
-  "शनिबार"
+  "शनिबार",
 ];
 final List<String> dayHeaderHalfNameEnglish = [
   "Sun",
@@ -237,7 +270,7 @@ final List<String> dayHeaderHalfNameEnglish = [
   "Wed",
   "Thu",
   "Fri",
-  "Sat"
+  "Sat",
 ];
 final List<String> dayHeaderHalfNameNepali = [
   "आइत",
@@ -246,18 +279,10 @@ final List<String> dayHeaderHalfNameNepali = [
   "बुध",
   "बिही",
   "शुक्र",
-  "शनि"
+  "शनि",
 ];
 
-final List<String> dayHeaderLetterEnglish = [
-  'S',
-  'M',
-  'T',
-  'W',
-  'T',
-  'F',
-  'S',
-];
+final List<String> dayHeaderLetterEnglish = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 final List<String> dayHeaderLetterNepali = [
   'आ',

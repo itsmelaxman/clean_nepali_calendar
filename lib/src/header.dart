@@ -67,31 +67,34 @@ class _CalendarHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final headerBuilder = _headerBuilder;
+
     return InkWell(
       onTap: _onHeaderTapped,
       onLongPress: _onHeaderLongPressed,
-      child: (_headerBuilder != null)
-          ? _headerBuilder!(_headerStyle.decoration, _kDayPickerRowHeight,
-              _handleNextMonth, _handlePreviousMonth, date)
+      child: headerBuilder != null
+          ? headerBuilder(
+              _headerStyle.decoration,
+              _kDayPickerHeaderHeight,
+              _handleNextMonth,
+              _handlePreviousMonth,
+              date,
+            )
           : Container(
               decoration: _headerStyle.decoration,
-              height: _kDayPickerRowHeight,
+              height: _kDayPickerHeaderHeight,
               child: Row(
                 children: <Widget>[
                   Expanded(
                     child: _headerStyle.centerHeaderTitle
-                        ? Center(
-                            child: _buildTitle(),
-                          )
+                        ? Center(child: _buildTitle())
                         : _buildTitle(),
                   ),
                   InkWell(
                     onTap: _changeToToday,
                     child: Text(
                       _language == Language.nepali ? "आज" : 'Today',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Semantics(
@@ -135,47 +138,72 @@ class _CalendarHeader extends StatelessWidget {
     return FadeTransition(
       opacity: _chevronOpacityAnimation,
       child: ExcludeSemantics(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: _headerStyle.centerHeaderTitle
+              ? Alignment.center
+              : Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 240),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _headerStyle.titleTextBuilder != null
+                              ? _headerStyle.titleTextBuilder!(date, _language)
+                              : '${formattedMonth(date.month, _language)} - ${_language == Language.english ? date.year : NepaliUnicode.convert('${date.year}')}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _headerStyle.titleTextStyle,
+                          textAlign: _headerStyle.centerHeaderTitle
+                              ? TextAlign.center
+                              : TextAlign.start,
+                        ),
+                      ),
+                      const Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
                   Text(
-                    _headerStyle.titleTextBuilder != null
-                        ? _headerStyle.titleTextBuilder!(
-                            date,
-                            _language,
-                          )
-                        : '${formattedMonth(date.month, _language)} - ${_language == Language.english ? date.year : NepaliUnicode.convert('${date.year}')}',
-                    style: _headerStyle.titleTextStyle,
+                    _buildGregorianMonthRangeLabel(date),
+                    style: _headerStyle.titleTextStyle.copyWith(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: _headerStyle.centerHeaderTitle
                         ? TextAlign.center
                         : TextAlign.start,
                   ),
-                  const Icon(Icons.arrow_drop_down)
                 ],
               ),
-              Text(
-                _headerStyle.titleTextBuilder != null
-                    ? _headerStyle.titleTextBuilder!(
-                        date,
-                        _language,
-                      )
-                    : "${getFormattedEnglishMonth(date.toDateTime().month)}/${getFormattedEnglishMonth(date.toDateTime().month + 1)} - ${date.toDateTime().year}",
-                style: _headerStyle.titleTextStyle
-                    .copyWith(fontWeight: FontWeight.normal, fontSize: 14),
-                textAlign: _headerStyle.centerHeaderTitle
-                    ? TextAlign.center
-                    : TextAlign.start,
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+String _buildGregorianMonthRangeLabel(NepaliDateTime date) {
+  final firstGregorianDate = NepaliDateTime(date.year, date.month).toDateTime();
+  final lastGregorianDate = NepaliDateTime(
+    date.year,
+    date.month,
+    date.totalDays,
+  ).toDateTime();
+  final yearLabel = firstGregorianDate.year == lastGregorianDate.year
+      ? '${firstGregorianDate.year}'
+      : '${firstGregorianDate.year}/${lastGregorianDate.year}';
+
+  return '${getFormattedEnglishMonth(firstGregorianDate.month)}/${getFormattedEnglishMonth(lastGregorianDate.month)} - $yearLabel';
 }
 
 String getFormattedEnglishMonth(int mnth) {
@@ -188,6 +216,8 @@ String getFormattedEnglishMonth(int mnth) {
       return "Mar";
     case DateTime.april:
       return "April";
+    case DateTime.may:
+      return "May";
     case DateTime.june:
       return "Jun";
     case DateTime.july:

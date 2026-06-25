@@ -52,8 +52,11 @@ void initState() {
 Widget build(BuildContext context) {
   return CleanNepaliCalendar(
     controller: _calendarController,
-    onDaySelected: (day){
-        print(day.toString());
+    onDaySelected: (day) {
+      print(day.toString());
+    },
+    onMonthChanged: (month) {
+      print(month.toString());
     },
   );
 }
