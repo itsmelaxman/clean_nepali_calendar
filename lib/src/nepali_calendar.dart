@@ -81,8 +81,11 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
     textDirection = Directionality.of(context);
     if (!_announcedInitialDate) {
       _announcedInitialDate = true;
-      SemanticsService.sendAnnouncement(
-        View.of(context),
+      // Using announce() for backward compatibility with older Flutter versions.
+      // sendAnnouncement() is not available on all supported Flutter releases.
+      // ignore: deprecated_member_use
+      SemanticsService.announce(
+        // View.of(context),
         NepaliDateFormat.yMMMMd().format(_selectedDate),
         textDirection,
       );
