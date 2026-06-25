@@ -19,7 +19,7 @@ void main() {
             lastDate: NepaliDateTime(2081, 12),
             enableVibration: false,
             headerStyle: HeaderStyle(
-              titleTextBuilder: (_, _) => 'Custom title',
+              titleTextBuilder: (_, __) => 'Custom title',
             ),
           ),
         ),
@@ -282,6 +282,86 @@ void main() {
 
     expect(find.text(nepaliMonthHeader(2070, 1)), findsOneWidget);
     expect(controller.selectedDay, initialDate);
+  });
+
+  testWidgets(
+      'onMonthChanged does not fire on initial build but fires on swipe and chevron navigation',
+      (
+    tester,
+  ) async {
+    final controller = NepaliCalendarController();
+    final initialDate = NepaliDateTime(2080, 1, 1);
+    var monthChanges = <NepaliDateTime>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CleanNepaliCalendar(
+            controller: controller,
+            initialDate: initialDate,
+            firstDate: initialDate,
+            lastDate: NepaliDateTime(2080, 12),
+            language: Language.english,
+            enableVibration: false,
+            onMonthChanged: monthChanges.add,
+          ),
+        ),
+      ),
+    );
+
+    expect(monthChanges, isEmpty);
+
+    await tester.drag(find.byType(PageView), const Offset(-700, 0));
+    await tester.pumpAndSettle();
+
+    expect(monthChanges.length, 1);
+    expect(monthChanges.first.month, initialDate.month + 1);
+
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+
+    expect(monthChanges.length, 2);
+    expect(monthChanges.last.month, initialDate.month + 2);
+
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await tester.pumpAndSettle();
+
+    expect(monthChanges.length, 3);
+    expect(monthChanges.last.month, initialDate.month + 1);
+  });
+
+  testWidgets(
+      'sizes calendar with detailed cell height when dateCellBuilder is provided',
+      (
+    tester,
+  ) async {
+    final initialDate = NepaliDateTime(2083, 3);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CleanNepaliCalendar(
+            controller: NepaliCalendarController(),
+            initialDate: initialDate,
+            firstDate: NepaliDateTime(2083, 1),
+            lastDate: NepaliDateTime(2083, 12),
+            enableVibration: false,
+            dateCellBuilder:
+                (_, __, ___, ____, _____, ______, _______, ________) =>
+                    Container(),
+          ),
+        ),
+      ),
+    );
+
+    final dayRows =
+        ((initialDate.weekday - 1 + initialDate.totalDays) / 7).ceil();
+    final expectedCalendarHeight = 56.0 + 52.0 * (dayRows + 1);
+
+    expect(
+      tester.getSize(find.byType(CleanNepaliCalendar)).height,
+      expectedCalendarHeight,
+    );
   });
 
   testWidgets('old controller is detached after controller replacement', (
