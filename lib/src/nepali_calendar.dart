@@ -100,11 +100,9 @@ class CleanNepaliCalendarState extends State<CleanNepaliCalendar> {
       );
     }
 
-    final dateRangeChanged =
-        widget.firstDate != oldWidget.firstDate ||
+    final dateRangeChanged = widget.firstDate != oldWidget.firstDate ||
         widget.lastDate != oldWidget.lastDate;
-    final initialDateChanged =
-        widget.initialDate != null &&
+    final initialDateChanged = widget.initialDate != null &&
         widget.initialDate != oldWidget.initialDate;
     if (initialDateChanged || dateRangeChanged) {
       final selectedDate = initialDateChanged

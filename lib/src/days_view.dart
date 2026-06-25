@@ -57,10 +57,10 @@ class _DaysView extends StatelessWidget {
     this.headerDayType = HeaderDayType.initial,
     this.headerDayBuilder,
     this.dateCellBuilder,
-  }) : assert(!firstDate.isAfter(lastDate)),
-       assert(!selectedDate.isBefore(firstDate)),
-       assert(!selectedDate.isAfter(lastDate)),
-       super(key: key);
+  })  : assert(!firstDate.isAfter(lastDate)),
+        assert(!selectedDate.isBefore(firstDate)),
+        assert(!selectedDate.isAfter(lastDate)),
+        super(key: key);
 
   final NepaliDateTime selectedDate;
 
@@ -178,18 +178,15 @@ class _DaysView extends StatelessWidget {
         labels.add(Container());
       } else {
         final dayToBuild = NepaliDateTime(year, month, day);
-        final disabled =
-            dayToBuild.isAfter(lastDate) ||
+        final disabled = dayToBuild.isAfter(lastDate) ||
             dayToBuild.isBefore(firstDate) ||
             (selectableDayPredicate != null &&
                 !selectableDayPredicate!(dayToBuild));
 
-        final isSelectedDay =
-            selectedDate.year == year &&
+        final isSelectedDay = selectedDate.year == year &&
             selectedDate.month == month &&
             selectedDate.day == day;
-        final bool isCurrentDay =
-            currentDate.year == year &&
+        final bool isCurrentDay = currentDate.year == year &&
             currentDate.month == month &&
             currentDate.day == day;
         final semanticLabel =

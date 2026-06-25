@@ -1,16 +1,15 @@
 part of clean_nepali_calendar;
 
-typedef DateCellBuilder =
-    Widget Function(
-      bool isToday,
-      bool isSelected,
-      bool isDisabled,
-      NepaliDateTime nepaliDate,
-      String label,
-      String text,
-      CalendarStyle calendarStyle,
-      bool isWeekend,
-    );
+typedef DateCellBuilder = Widget Function(
+  bool isToday,
+  bool isSelected,
+  bool isDisabled,
+  NepaliDateTime nepaliDate,
+  String label,
+  String text,
+  CalendarStyle calendarStyle,
+  bool isWeekend,
+);
 
 class _DayWidget extends StatelessWidget {
   const _DayWidget({
