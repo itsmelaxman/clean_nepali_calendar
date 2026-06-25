@@ -1,13 +1,12 @@
 part of clean_nepali_calendar;
 
-typedef HeaderBuilder =
-    Widget Function(
-      BoxDecoration decoration,
-      double height,
-      Function nextMonthHandler,
-      Function prevMonthHandler,
-      NepaliDateTime nepaliDateTime,
-    );
+typedef HeaderBuilder = Widget Function(
+  BoxDecoration decoration,
+  double height,
+  Function nextMonthHandler,
+  Function prevMonthHandler,
+  NepaliDateTime nepaliDateTime,
+);
 
 class _CalendarHeader extends StatelessWidget {
   const _CalendarHeader({
@@ -26,18 +25,18 @@ class _CalendarHeader extends StatelessWidget {
     this.onHeaderLongPressed,
     required changeToToday,
     HeaderBuilder? headerBuilder,
-  }) : _chevronOpacityAnimation = chevronOpacityAnimation,
-       _isDisplayingFirstMonth = isDisplayingFirstMonth,
-       _previousMonthDate = previousMonthDate,
-       _isDisplayingLastMonth = isDisplayingLastMonth,
-       _nextMonthDate = nextMonthDate,
-       _headerStyle = headerStyle,
-       _handleNextMonth = handleNextMonth,
-       _handlePreviousMonth = handlePreviousMonth,
-       _language = language,
-       _changeToToday = changeToToday,
-       _headerBuilder = headerBuilder,
-       super(key: key);
+  })  : _chevronOpacityAnimation = chevronOpacityAnimation,
+        _isDisplayingFirstMonth = isDisplayingFirstMonth,
+        _previousMonthDate = previousMonthDate,
+        _isDisplayingLastMonth = isDisplayingLastMonth,
+        _nextMonthDate = nextMonthDate,
+        _headerStyle = headerStyle,
+        _handleNextMonth = handleNextMonth,
+        _handlePreviousMonth = handlePreviousMonth,
+        _language = language,
+        _changeToToday = changeToToday,
+        _headerBuilder = headerBuilder,
+        super(key: key);
 
   final Animation<double> _chevronOpacityAnimation;
   final bool _isDisplayingFirstMonth;
@@ -68,11 +67,13 @@ class _CalendarHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final headerBuilder = _headerBuilder;
+
     return InkWell(
       onTap: _onHeaderTapped,
       onLongPress: _onHeaderLongPressed,
-      child: (_headerBuilder != null)
-          ? _headerBuilder(
+      child: headerBuilder != null
+          ? headerBuilder(
               _headerStyle.decoration,
               _kDayPickerHeaderHeight,
               _handleNextMonth,
@@ -122,9 +123,8 @@ class _CalendarHeader extends StatelessWidget {
                         tooltip: _isDisplayingLastMonth
                             ? null
                             : 'Next month ${formattedMonth(_nextMonthDate.month, Language.english)} ${_nextMonthDate.year}',
-                        onPressed: _isDisplayingLastMonth
-                            ? null
-                            : _handleNextMonth,
+                        onPressed:
+                            _isDisplayingLastMonth ? null : _handleNextMonth,
                       ),
                     ),
                   ),

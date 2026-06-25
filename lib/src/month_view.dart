@@ -23,10 +23,10 @@ class _MonthView extends StatefulWidget {
     this.headerDayBuilder,
     this.dateCellBuilder,
     this.headerBuilder,
-  }) : assert(!firstDate.isAfter(lastDate)),
-       assert(!selectedDate.isBefore(firstDate)),
-       assert(!selectedDate.isAfter(lastDate)),
-       super(key: key);
+  })  : assert(!firstDate.isAfter(lastDate)),
+        assert(!selectedDate.isBefore(firstDate)),
+        assert(!selectedDate.isAfter(lastDate)),
+        super(key: key);
 
   final NepaliDateTime selectedDate;
 
@@ -97,15 +97,22 @@ class _MonthViewState extends State<_MonthView>
   @override
   void didUpdateWidget(_MonthView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.firstDate != oldWidget.firstDate) {
+
+    final dateRangeChanged = widget.firstDate != oldWidget.firstDate ||
+        widget.lastDate != oldWidget.lastDate;
+
+    final selectedDateChanged = widget.selectedDate != oldWidget.selectedDate;
+
+    if (dateRangeChanged ||
+        (widget.pageToSelectedDate && selectedDateChanged)) {
       final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
+
       _jumpToMonthPage(monthPage);
-      _handleMonthPageChanged(monthPage, notify: false);
-    } else if (widget.pageToSelectedDate &&
-        widget.selectedDate != oldWidget.selectedDate) {
-      final monthPage = _monthDelta(widget.firstDate, widget.selectedDate);
-      _jumpToMonthPage(monthPage);
-      _handleMonthPageChanged(monthPage, notify: false);
+
+      _handleMonthPageChanged(
+        monthPage,
+        notify: false,
+      );
     }
   }
 
@@ -236,9 +243,9 @@ class _MonthViewState extends State<_MonthView>
       : _kDayPickerDetailedCellHeight;
 
   int get _currentDayPickerRowCount => _dayPickerRowCount(
-    _currentDisplayedMonthDate,
-    renderDaysOfWeek: widget.calendarStyle.renderDaysOfWeek,
-  );
+        _currentDisplayedMonthDate,
+        renderDaysOfWeek: widget.calendarStyle.renderDaysOfWeek,
+      );
 
   double get _dayPickerHeight =>
       _kDayPickerHeaderHeight + (_cellHeight * _currentDayPickerRowCount);
